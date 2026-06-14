@@ -1,0 +1,214 @@
+// Menu mobile toggle
+const menuToggle = document.querySelector('.menu-toggle');
+const navLinks = document.querySelector('.nav-links');
+
+if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        menuToggle.classList.toggle('active');
+    });
+
+    // Fermer le menu quand on clique sur un lien
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            menuToggle.classList.remove('active');
+        });
+    });
+}
+
+// Animation au scroll pour la navbar
+let lastScroll = 0;
+const navbar = document.querySelector('.navbar');
+
+if (navbar) {
+    window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+
+        if (currentScroll > lastScroll && currentScroll > 100) {
+            navbar.style.transform = 'translateY(-100%)';
+        } else {
+            navbar.style.transform = 'translateY(0)';
+        }
+
+        lastScroll = currentScroll;
+    });
+}
+
+// Slider projets et articles
+const sliderContainers = document.querySelectorAll('.slider-container');
+
+sliderContainers.forEach(container => {
+    const slider = container.querySelector('.slider');
+    const slides = Array.from(slider.children);
+    const prevBtn = container.querySelector('.slider-btn-prev');
+    const nextBtn = container.querySelector('.slider-btn-next');
+    const dotsContainer = container.querySelector('.slider-dots');
+
+    if (!slider || !prevBtn || !nextBtn || !dotsContainer || slides.length === 0) return;
+
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+
+    function getSlidesPerView() {
+        return window.innerWidth >= 769 ? 3 : 1;
+    }
+
+    function getTotalPages() {
+        return Math.ceil(totalSlides / getSlidesPerView());
+    }
+
+    function createDots() {
+        dotsContainer.innerHTML = '';
+        const pages = getTotalPages();
+        for (let i = 0; i < pages; i++) {
+            const dot = document.createElement('button');
+            dot.classList.add('slider-dot');
+            dot.setAttribute('aria-label', `Page ${i + 1}`);
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    createDots();
+
+    function updateSlider() {
+        const slidesPerView = getSlidesPerView();
+        const slideWidth = 100 / slidesPerView;
+        slider.style.transform = `translateX(-${currentSlide * slideWidth * slidesPerView}%)`;
+
+        const dots = dotsContainer.querySelectorAll('.slider-dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentSlide);
+        });
+
+        // Masquer/afficher les boutons selon la position
+        const maxSlide = getTotalPages() - 1;
+        prevBtn.classList.toggle('hidden', currentSlide === 0);
+        nextBtn.classList.toggle('hidden', currentSlide >= maxSlide);
+    }
+
+    function goToSlide(index) {
+        const maxSlide = getTotalPages() - 1;
+        currentSlide = Math.max(0, Math.min(index, maxSlide));
+        updateSlider();
+    }
+
+    function nextSlide() {
+        const maxSlide = getTotalPages() - 1;
+        currentSlide = currentSlide >= maxSlide ? 0 : currentSlide + 1;
+        updateSlider();
+    }
+
+    function prevSlide() {
+        const maxSlide = getTotalPages() - 1;
+        currentSlide = currentSlide <= 0 ? maxSlide : currentSlide - 1;
+        updateSlider();
+    }
+
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+
+    // Initial state
+    updateSlider();
+
+    // Recalculer au resize
+    window.addEventListener('resize', () => {
+        createDots();
+        currentSlide = 0;
+        updateSlider();
+    });
+
+    // Swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    slider.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    slider.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+
+        if (diff > swipeThreshold) {
+            nextSlide();
+        } else if (diff < -swipeThreshold) {
+            prevSlide();
+        }
+    }
+});
+
+// Animation d'apparition des sections au scroll
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('section').forEach(section => {
+    section.classList.add('fade-in');
+    observer.observe(section);
+});
+
+// Lightbox pour les images d'article
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.querySelector('.lightbox-img');
+const lightboxClose = document.querySelector('.lightbox-close');
+const articleImages = document.querySelectorAll('.article-img');
+
+if (lightbox && lightboxImg && articleImages.length > 0) {
+    articleImages.forEach(img => {
+        img.addEventListener('click', () => {
+            lightboxImg.src = img.src;
+            lightboxImg.alt = img.alt;
+            lightbox.classList.add('active');
+            lightbox.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        // clear src after transition to avoid flash on next open
+        setTimeout(() => {
+            if (!lightbox.classList.contains('active')) {
+                lightboxImg.src = '';
+            }
+        }, 300);
+    }
+
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeLightbox();
+        });
+    }
+
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            closeLightbox();
+        }
+    });
+}

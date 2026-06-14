@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Initiation aux agents IA autonomes : création de user stories à partir de prompts avec un agent hébergé localement via LM Studio.">
+    <meta name="author" content="Andry RAZAFINDRAZAKA">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#10b981">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Initiation aux agents IA : Créer des user stories à partir de prompts">
+    <meta property="og:description" content="Initiation aux agents IA autonomes avec un agent hébergé localement.">
+    <meta property="og:locale" content="fr_FR">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Initiation aux agents IA : Créer des user stories à partir de prompts">
+    <meta name="twitter:description" content="Initiation aux agents IA autonomes avec un agent hébergé localement.">
+
+    <title>Initiation aux agents IA : Créer des user stories à partir de prompts | Andry RAZAFINDRAZAKA</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <main>
+        <article id="article-agents-ia" class="article-page">
+            <div class="article-header">
+                <h1>Initiation aux agents IA : Créer des user stories à partir de prompts</h1>
+                <p class="article-meta">Publié par Andry RAZAFINDRAZAKA</p>
+                <p class="article-duration">Durée du projet : 4h</p>
+            </div>
+
+            <div class="article-tech-stack">
+                <h3>Technologies utilisées</h3>
+                <div class="article-techs">
+                    <span class="tech-tag">HTML</span>
+                    <span class="tech-tag">CSS</span>
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">Go</span>
+                    <span class="tech-tag">LM Studio</span>
+                </div>
+            </div>
+
+            <div class="article-content">
+                <p>Après avoir expérimenté les modèles de langage en local et les workflows de génération d'images, je voulais aller plus loin. L'étape logique suivante : comprendre et construire des <strong>agents IA autonomes</strong>. Pas de simples chatbots, mais des systèmes capables d'analyser un besoin, poser des questions de clarification, et produire un livrable structuré.</p>
+
+                <p>Le projet que je me suis fixé : un <strong>agent de génération de user stories</strong>. L'idée est simple : décrire une idée d'application en quelques mots, et laisser l'IA produire des epics et des user stories prêtes à l'emploi pour une équipe de développement.</p>
+
+                <p>Tout ce projet a été réalisé <strong>entièrement en local</strong>. L'agent IA est hébergé sur ma propre machine grâce à <em>LM Studio</em>, qui me permet de servir des modèles via une API locale. Cette architecture m'a donné l'occasion de <strong>tester plusieurs LLM open source</strong> et de comparer leurs résultats : <em>qwen/qwen3.6-27b</em>, <em>nvidia/nemotron-3-nano-4b</em>, et <em>Gemma 4 26B</em>. Chacun a ses forces et ses faiblesses, mais les confronter m'a permis d'affiner les prompts et le comportement de l'agent.</p>
+
+                <hr>
+
+                <h2>I - Du concept à l'agent</h2>
+
+                <p>Je commence simplement en implémentant un <strong>workflow pipeline</strong> pour avoir un aperçu du résultat que je souhaite. L'idée est de chaîner les étapes de manière linéaire : réception du prompt, traitement par le modèle, et retour du résultat. Pour faciliter l'interprétation automatisée par l'agent, je lui donne dès le départ le <strong>format JSON attendu</strong> en sortie. Ainsi, le modèle sait exactement quelle structure respecter, ce qui rend le parsing bien plus fiable et permet à l'agent de raisonner sur des données structurées.</p>
+
+                <p>Je définis le comportement attendu : l'agent doit suivre un workflow en plusieurs étapes :</p>
+
+                <ul>
+                    <li><strong>Analyser</strong> : comprendre le besoin exprimé par l'utilisateur</li>
+                    <li><strong>Clarifier</strong> : poser des questions si le prompt est trop vague</li>
+                    <li><strong>Générer</strong> : produire des user stories structurées au format JSON</li>
+                </ul>
+
+                <p>Pour l'interface, je pars sur une application web simple avec un champ de saisie et un affichage conversationnel. L'agent dialogue avec un modèle local accessible via une API.</p>
+
+                <p>Le premier test est prometteur : je décris une application de gestion de candidatures, et l'agent me retourne immédiatement quatre epics bien structurées avec leurs user stories respectives. Mais ce n'est qu'un pipeline basique. Il fonctionne, mais il faut maintenant <strong>rendre le résultat plus intelligent</strong>.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/agent/step_one.PNG" alt="Premier test de génération de user stories" loading="lazy">
+                </figure>
+
+                <hr>
+
+                <h2>II - L'analyse et la clarification</h2>
+
+                <p>Le vrai défi arrive avec les prompts ambigus. Si je dis simplement "Je veux créer une application de rencontre", le résultat serait trop générique. J'ai donc ajouté une étape d'analyse intermédiaire :</p>
+
+                <ul>
+                    <li>le type de produit</li>
+                    <li>les utilisateurs cibles</li>
+                    <li>les fonctionnalités clés</li>
+                    <li>les informations manquantes</li>
+                    <li>les questions suggérées pour affiner le besoin</li>
+                </ul>
+
+                <p>Cette analyse permet à l'agent de détecter ce qui manque et de proposer des questions avant de générer les user stories. C'est un vrai game changer : l'agent n'est plus un simple exécutant, il devient un véritable interlocuteur.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/agent/step_two.PNG" alt="Analyse du projet avec questions suggérées" loading="lazy">
+                </figure>
+
+                <hr>
+
+                <h2>III - Analyse complète et détection des lacunes</h2>
+
+                <p>Une fois le pipeline de base fonctionnel, je voulais rendre l'agent véritablement intelligent. La clé : une <strong>analyse complète de la demande</strong>. L'agent doit examiner le prompt sous toutes ses coutures et détecter si des informations manquent pour produire une réponse claire et complète.</p>
+
+                <p>Je mets en place une étape d'analyse approfondie. L'agent évalue le prompt selon plusieurs critères : le type de produit, les utilisateurs cibles, les fonctionnalités attendues, les contraintes techniques, et les objectifs métier. Pour chaque critère, il détermine si l'information est suffisante ou si elle doit être complétée.</p>
+
+                <p>Si des lacunes sont détectées, l'agent passe en mode <em>CLARIFICATION</em>. Il ne génère pas de user stories à ce stade : il pose des questions ciblées pour obtenir les informations manquantes. L'utilisateur répond directement dans le chat, ce qui enrichit progressivement le contexte.</p>
+
+                <p>Par exemple, pour une application de rencontre entre joueurs de World of Warcraft, l'agent identifie immédiatement les points flous : les plateformes cibles (iOS, Android, Web), la priorité entre rencontre amoureuse et organisation de raids, et le niveau d'intégration avec l'API WoW. Sans ces précisions, les user stories seraient trop génériques pour être utiles.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/agent/step_three.PNG" alt="État de clarification de l'agent" loading="lazy">
+                </figure>
+
+                <p>En arrière-plan, chaque session conserve son état (NOUVEAU, CLARIFICATION, TERMINÉ). L'agent peut ainsi reprendre une conversation là où elle s'était arrêtée.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/agent/clarification.PNG" alt="Chat agent en mode clarification" loading="lazy">
+                </figure>
+
+                <hr>
+
+                <h2>IV - Génération et résultats</h2>
+
+                <p>Une fois le besoin suffisamment clarifié, l'agent génère un JSON structuré contenant les epics et leurs user stories. Le format choisi suit la méthode <em>As a / I want / So that</em> (adapté ici en <em>as / want / goal</em>).</p>
+
+                <p>Le résultat est directement exploitable : on peut l'importer dans un outil de gestion de projet ou le copier pour une équipe de développement.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/agent/success.PNG" alt="User stories générées avec succès" loading="lazy">
+                </figure>
+
+                <p>Parfois, les appels au modèle local peuvent échouer (timeout, surcharge). J'ai ajouté une gestion des erreurs avec un message explicite pour l'utilisateur, et la possibilité de réessayer.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/agent/step_four.PNG" alt="Gestion d'erreur lors de la génération" loading="lazy">
+                </figure>
+
+                <p>Les performances de l'ordinateur ont été un vrai frein. J'ai rencontré plusieurs <strong>soucis de performance</strong> au cours des tests : certains modèles étaient tout simplement <strong>trop gourmands pour ma configuration</strong> et j'ai dû les abandonner. Entre la charge sur le GPU, la consommation de VRAM et la latence croissante, il a fallu faire des choix drastiques. Un modèle qui tourne bien sur papier peut très vite rendre la machine instable en pratique.</p>
+
+                <p>J'ai aussi dû <strong>peaufiner les prompts côté serveur</strong> pour éviter certaines <strong>boucles interminables</strong>. L'agent, mal guidé, pouvait tourner en rond : clarifier, re-clarifier, et ne jamais passer à la génération. C'était souvent dû à un prompt trop permissif ou à une consigne de sortie mal calibrée. En resserrant les instructions système et en ajoutant des garde-fous, j'ai réussi à stabiliser le flux et à obtenir des réponses rapides et concluantes.</p>
+
+                <hr>
+
+                <h2>Conclusion</h2>
+
+                <p>Ce projet m'a permis de comprendre la différence entre un simple appel à un LLM et un véritable agent autonome. La clé réside dans le <strong>workflow</strong> : analyser, clarifier, puis générer. En ajoutant une boucle de conversation, l'agent produit des résultats bien plus pertinents qu'un simple prompt one-shot.</p>
+
+                <p>Techniquement, le projet est construit avec une interface web simple, un serveur en Go, et un modèle local via API. Rien de complexe, mais l'orchestration des étapes fait toute la différence.</p>
+
+                <p>Cette expérience m'a aussi montré les limites des modèles locaux : la latence et les timeouts sont des réalités qu'il faut gérer. Mais avec une architecture résiliente, on peut obtenir des outils vraiment utiles, hébergés chez soi, sans dépendre d'une API externe.</p>
+
+                <p>Prochaine étape : faire de cet agent un vrai collaborateur de product ownership, capable d'estimer la complexité et de proposer des critères d'acceptation.</p>
+            </div>
+        </article>
+    </main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" aria-hidden="true">
+        <button class="lightbox-close" aria-label="Fermer">&times;</button>
+        <img class="lightbox-img" src="" alt="Agrandissement">
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Andry RAZAFINDRAZAKA. Tous droits réservés.</p>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+    <script src="../js/script.js"></script>
+</body>
+</html>
