@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Analyzing CV : un outil IA pour extraire, analyser et classer automatiquement des CV en fonction d'une offre d'emploi.">
+    <meta name="author" content="Andry RAZAFINDRAZAKA">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#10b981">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Analyzing CV : un outil IA pour recruter plus intelligemment">
+    <meta property="og:description" content="Un outil complet d'analyse et de classement de CV par IA, construit en 4 heures avec Next.js, NestJS et un LLM local.">
+    <meta property="og:locale" content="fr_FR">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Analyzing CV : un outil IA pour recruter plus intelligemment">
+    <meta name="twitter:description" content="Un outil complet d'analyse et de classement de CV par IA, construit en 4 heures.">
+
+    <title>Analyzing CV : un outil IA pour recruter plus intelligemment | Andry RAZAFINDRAZAKA</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <main>
+        <article id="article-cv" class="article-page">
+            <div class="article-header">
+                <h1>Analyzing CV : un outil IA pour recruter plus intelligemment</h1>
+                <p class="article-meta">Publié par Andry RAZAFINDRAZAKA</p>
+                <p class="article-duration">Durée du projet : 4h</p>
+            </div>
+
+            <div class="article-tech-stack">
+                <h3>Technologies utilisées</h3>
+                <div class="article-techs">
+                    <span class="tech-tag">Next.js</span>
+                    <span class="tech-tag">NestJS</span>
+                    <span class="tech-tag">TypeScript</span>
+                    <span class="tech-tag">LM Studio</span>
+                    <span class="tech-tag">Qwen 3.6</span>
+                    <span class="tech-tag">pdf-parse</span>
+                </div>
+            </div>
+
+            <div class="article-content">
+  
+                <p>Le défi est de construire un outil capable d'<strong>analyser plusieurs CV simultanément</strong> (j'ai fixé la limite à 5 pour commencer), d'<strong>extraire les données clés</strong> (expériences, formations, compétences, contact), de permettre une <strong>correction humaine</strong> si besoin, puis de <strong>classer les CV</strong> par pertinence par rapport à une offre d'emploi.</p>
+
+                <p>Le tout en m'appuyant sur un <strong>LLM local</strong> (LM Studio avec Qwen 3.6) pour ne pas dépendre d'une API externe et garder le contrôle total sur les données.</p>
+
+                <hr>
+
+                <h2>I - Upload, extraction et analyse des CV</h2>
+
+                <p>La première étape est la plus critique : transformer un PDF en données exploitables. J'ai choisi de découper le processus en <strong>trois étapes visibles pour l'utilisateur</strong>. Pourquoi ? Parce que je voulais garder un contrôle total sur le flux et donner à l'utilisateur la possibilité de corriger les erreurs de l'IA avant le classement final.</p>
+
+                <p>L'utilisateur upload ses CV (max 5, PDF uniquement, 5 Mo par fichier). Le backend NestJS récupère les fichiers, les stocke temporairement, et utilise <em>pdf-parse</em> pour en extraire le texte brut. Ce texte est ensuite envoyé au LLM local via une API REST, avec un prompt très strict demandant un retour JSON propre.</p>
+
+                <p>Le prompt est rodé pour forcer le modèle à retourner des strings simples (pas d'objets imbriqués) avec des puces et des sauts de ligne. C'était un vrai défi : les modèles locaux ont tendance à inventer des structures JSON complexes ou à mal formatter leur réponse. Il a fallu itérer plusieurs fois pour obtenir un résultat stable.</p>
+
+                <p>Une fois les données extraites, l'utilisateur passe à l'étape 2.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/cv/1.PNG" alt="Étape 1 : Upload des CV et description du poste" loading="lazy">
+                </figure>
+
+                <hr>
+
+                <h2>II - Correction et validation par l'utilisateur</h2>
+
+                <p>C'est l'étape que je considère comme la plus importante. L'IA fait du mieux qu'elle peut, mais elle peut se tromper — surtout avec des PDF mal formatés ou des CV atypiques. Plutôt que de faire confiance aveuglément au modèle, je préfère <strong>donner le contrôle à l'utilisateur</strong>.</p>
+
+                <p>Les données extraites s'affichent dans un tableau éditable : expériences, formations, compétences, contact. Chaque cellule est cliquable et se transforme en textarea aux dimensions exactes de la cellule, pour une édition fluide sans rupture visuelle. Les listes s'affichent sous forme de puces, et l'utilisateur peut modifier directement le contenu.</p>
+
+                <p>Cette étape de validation est essentielle : elle garantit que le classement final se fera sur des données fiables. Une fois l'utilisateur satisfait, il clique sur "Valider et classer". Les données corrigées (hors colonne contact, qui n'est pas pertinente pour le scoring) sont envoyées au LLM pour analyse et classement.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/cv/2.PNG" alt="Étape 2 : Tableau de correction des données extraites" loading="lazy">
+                </figure>
+
+                <hr>
+
+                <h2>III - Classement intelligent des candidats</h2>
+
+                <p>Voici le cœur du projet. Le LLM reçoit l'intégralité des CVs validés plus la description du poste saisie par l'utilisateur à l'étape 1. Sa mission : attribuer un <strong>score sur 100</strong> à chaque candidat et justifier son évaluation en une phrase.</p>
+
+                <p>Le prompt est conçu pour que le modèle compare chaque profil aux critères du poste de manière structurée. Il retourne un tableau JSON trié du meilleur score au plus faible. Le frontend affiche ensuite le classement sous forme de cartes épurées : position, identifiant du CV, justification, score visuel avec une barre de progression.</p>
+
+                <p>Le résultat est surprenant de pertinence. Même avec un modèle local, le classement reflète bien la correspondance entre les compétences demandées et celles présentes sur le CV. Le score donne une indication chiffrée utile, et la justification permet de comprendre rapidement pourquoi un profil ressort plus qu'un autre.</p>
+
+                <hr>
+
+                <h2>IV - Design sobre et simpliste</h2>
+
+                <p>Au départ, le design était fonctionnel mais quelconque. J'ai voulu quelque chose de plus travaillé, sans pour autant tomber dans le superflu. Je me suis appuyé sur une skill d'agent (<em>skills.sh</em>) pour obtenir une direction design claire : <strong>un thème sobre en teintes de noir, gris et blanc</strong>, sans gradient, sans couleurs criardes.</p>
+
+                <p>Le résultat est épuré : fond gris très clair, typographie serrée, bordures fines, boutons noirs, barres de progression noires. L'interface respire. Chaque étape est clairement identifiée avec un label discret. L'expérience utilisateur est fluide et professionnelle.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/cv/5.jpg" alt="Vue d'ensemble de l'interface finale" loading="lazy">
+                </figure>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/cv/6.PNG" alt="Détail du design sobre et épuré" loading="lazy">
+                </figure>
+
+                <hr>
+
+                <h2>Conclusion</h2>
+
+                <p>Ce projet de 4 heures m'a montré à quel point un LLM local peut être puissant pour des tâches structurées, à condition de bien guider le prompt et de garder l'humain dans la boucle. L'architecture en trois étapes — extraction, correction, classement — est volontaire : elle donne du contrôle à l'utilisateur et limite les erreurs de l'IA.</p>
+
+                <p>Techniquement, le stack est simple mais efficace : Next.js pour le front, NestJS pour l'API, pdf-parse pour l'extraction, et LM Studio avec Qwen 3.6 pour l'analyse IA. Rien d'exotique, mais une orchestration qui fait le job.</p>
+
+                <p>Les axes d'amélioration sont déjà clairs :</p>
+
+                <ul>
+                    <li><strong>Analyse plus intelligente</strong> : faire poser des questions de clarification par l'IA si le prompt du poste est trop vague, ou si des informations manquent sur le CV.</li>
+                    <li><strong>Plus de réflexion sur les colonnes</strong> : enrichir les données extraites (langues, certifications, soft skills) pour un scoring plus fin.</li>
+                    <li><strong>Mode direct</strong> : option pour sauter l'étape 2 et afficher le classement immédiatement, pour les utilisateurs pressés.</li>
+                    <li><strong>Authentification et crédits</strong> : un système de compte avec crédits pour analyser des centaines de CV en simultané, avec un modèle de monétisation.</li>
+                    <li><strong>Sauvegarde et partage</strong> : persistance des classements, export PDF, envoi par email des résultats.</li>
+                </ul>
+
+                <p>Ce projet prouve qu'on peut construire des outils IA utiles et utilisables en très peu de temps, à condition de bien découper le problème et de garder l'utilisateur au centre de l'expérience.</p>
+            </div>
+        </article>
+    </main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" aria-hidden="true">
+        <button class="lightbox-close" aria-label="Fermer">&times;</button>
+        <img class="lightbox-img" src="" alt="Agrandissement">
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Andry RAZAFINDRAZAKA. Tous droits réservés.</p>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+    <script src="../js/script.js"></script>
+</body>
+</html>
