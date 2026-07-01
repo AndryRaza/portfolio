@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Meme Coin Analyzer - Un projet d'apprentissage Flask et OCR appliqué à l'analyse de tokens crypto en local.">
+    <meta name="author" content="Andry RAZAFINDRAZAKA">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#10b981">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Meme Coin Analyzer — Mon premier pas dans la crypto + IA">
+    <meta property="og:description" content="Un projet d'apprentissage Flask et OCR appliqué à l'analyse de tokens crypto en local.">
+    <meta property="og:locale" content="fr_FR">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Meme Coin Analyzer — Mon premier pas dans la crypto + IA">
+    <meta name="twitter:description" content="Un projet d'apprentissage Flask et OCR appliqué à l'analyse de tokens crypto en local.">
+
+    <title>Meme Coin Analyzer — Mon premier pas dans la crypto + IA | Andry RAZAFINDRAZAKA</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <main>
+        <article id="article-meme-coins" class="article-page">
+            <div class="article-header">
+                <h1>Meme Coin Analyzer — Mon premier pas dans la crypto + IA</h1>
+                <p class="article-meta">Publié par Andry RAZAFINDRAZAKA</p>
+                <p class="article-duration">Durée du projet : 1 journée</p>
+            </div>
+
+            <div class="article-tech-stack">
+                <h3>Technologies utilisées</h3>
+                <div class="article-techs">
+                    <span class="tech-tag">Flask</span>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">Tesseract OCR</span>
+                    <span class="tech-tag">SQLite</span>
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">LM Studio</span>
+                    <span class="tech-tag">mss</span>
+                </div>
+            </div>
+
+            <div class="article-content">
+                <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
+                    <p style="margin: 0; color: #fca5a5; font-weight: 600;">⚠️ Avant de lire : projet strictement instructif</p>
+                    <p style="margin: 8px 0 0; color: #e2e8f0; font-size: 0.95rem;">Ce projet a été réalisé dans un but pédagogique uniquement. Les meme coins sont des actifs extrêmement volatiles et risqués. Ne mettez jamais en jeu des sommes que vous n'êtes pas prêts à perdre. Ce n'est pas un conseil financier, loin de là.</p>
+                </div>
+
+                <p>Alors voilà. Depuis quelques temps, je me suis mis à la crypto. Pas le Bitcoin ou l'ETH de grand-père, non. Je parle des <em>meme coins</em>, ces petits tokens qui peuvent monter de 500% en une heure… ou s'effondrer à zéro en dix minutes.</p>
+
+                <p>Quand on débute dans cet univers, c'est le bazar. Du vocabulaire incompréhensible, des dashboards avec des chiffres partout, des graphiques en bougie, des termes comme "market cap", "liquidité", "holders", "rug pull"… Bref, une jungle.</p>
+
+                <p>Plutôt que de juste regarder des vidéos YouTube en mode passif, je me suis dit : <em>pourquoi pas coder un outil qui m'aide à comprendre tout ça en pratique ?</em> L'objectif était clair : apprendre Flask (que je n'avais jamais vraiment utilisé), manipuler de l'OCR, et essayer de faire parler une IA locale sur des données crypto.</p>
+
+                <p>Et accessoirement, si ça peut m'aider à repérer un token intéressant avant qu'il ne pump, je dis pas non.</p>
+
+                <hr>
+
+                <h2>I - Description du projet</h2>
+
+                <p>L'idée de base est simple : j'ouvre DexScreener (un site qui liste plein de tokens et leurs stats), mon outil fait une capture d'écran, lit les chiffres à ma place, et me dit "celui-là a l'air cool" ou "fuis, c'est un scam".</p>
+
+                <p>C'est un projet 100% local. Pas d'API cloud, pas de clé payante, tout tourne sur mon PC. L'IA analyse les données, attribue un score de 0 à 100, et donne une recommandation : <em>STRONG_BUY</em>, <em>BUY</em>, <em>WATCH</em>, <em>SKIP</em>, ou <em>RUG_RISK</em> (quand ça sent très mauvais).</p>
+
+                <p>On peut aussi ajouter des positions (genre "j'ai acheté 50$ de SHIB à tel prix"), suivre leur évolution, et demander conseil à l'IA pour savoir s'il faut vendre ou pas.</p>
+
+                <p>Le frontend ? Très basique. HTML, CSS, JS vanilla. Franchement je me suis pas pris la tête, ce n'était pas le but du projet. Je voulais apprendre le backend et l'OCR, pas faire un UI de fou.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/meme-coins/example_mobile_dexscreener.PNG" alt="Screenshot de l'interface DexScreener" loading="lazy">
+                    <figcaption style="text-align:center; color: var(--text-light); font-size: 0.85rem; margin-top: 8px;">Screenshot de l'interface DexScreener</figcaption>
+                </figure>
+
+                <hr>
+
+                <h2>II - Outils et pourquoi</h2>
+
+                <p><strong>Flask</strong> : j'avais envie de sortir de ma zone de confort (Laravel / NodeJS). Python pour le backend, ça colle bien avec tout l'écosystème IA. Et honnêtement, pour un petit projet comme ça, c'est rapide à mettre en place.</p>
+
+                <p><strong>Tesseract OCR</strong> : c'est le moteur qui lit le texte sur les images. Gratuit, open source, et il tourne sur CPU. Pas besoin de GPU pour ça, ce qui est parfait quand on a déjà une IA locale qui bouffe la VRAM.</p>
+
+                <p><strong>mss</strong> : une lib Python pure pour faire des captures d'écran. Pas besoin de compiler Pillow (qui galère sur Python 3.14), ça génère du PNG direct.</p>
+
+                <p><strong>LM Studio</strong> : mon serveur d'IA locale. J'ai un modèle texte chargé dessus (genre gemma-4 ou qwen3.6) qui reçoit les données extraites par OCR et les analyse.</p>
+
+                <p><strong>SQLite + SQLAlchemy</strong> : pour stocker les analyses et les positions. Simple, pas besoin d'installer un gros SGBD.</p>
+
+                <hr>
+
+                <h2>III - Premiers essais — Premiers problèmes</h2>
+
+                <p>Au départ, je faisais une capture <em>fullscreen</em>. Grosse erreur. Mon bureau est un foutoir, j'ai Discord ouvert, des fenêtres partout. L'OCR récupérait tout et n'importe quoi. Des bouts de conversations, des notifications, des icônes… Impossible à parser proprement.</p>
+
+                <p>Deuxième idée — et c'était mon objectif initial : faire une <strong>observation en temps réel</strong>. Le programme scrute l'écran en permanence, détecte les changements de prix instantanément, et met à jour les scores en live. En théorie c'est le rêve. En pratique, c'est un cauchemar. L'OCR toutes les secondes ça bouffe du CPU, l'IA réanalyse tout le temps, et au final le PC rame sévèrement. Bref, le temps réel était mort-né.</p>
+
+                <p>On a donc dû partir sur une approche plus raisonnable : des <strong>captures à intervalle de temps</strong>. Pas du live, mais un rafraîchissement régulier et optimisé.</p>
+
+                <p>Troisième gros souci : je voulais utiliser un modèle de vision (VLM) pour que l'IA regarde directement le screenshot et comprenne tout seule. Sauf que ma carte graphique n'a pas assez de VRAM pour charger un modèle vision + un modèle texte en même temps. Résultat : soit ça plante, soit c'est d'une lenteur…</p>
+
+                <p>Il a donc fallu trouver une autre méthode.</p>
+
+                <hr>
+
+                <h2>IV - Ça marche ! Et améliorations</h2>
+
+                <p>La solution finale que j'ai adoptée, c'est un pipeline en trois étapes :</p>
+
+                <ol>
+                    <li><strong>Capture ciblée</strong> : plutôt que le fullscreen, je capture soit une zone précise que je sélectionne à la souris, soit directement une fenêtre (genre mon navigateur avec DexScreener). Propre, rapide, pas de bruit.</li>
+                    <li><strong>OCR avec Tesseract</strong> : j'ai dû ajuster le mode de Tesseract (passage en PSM 11 "sparse text") pour bien gérer les layouts en grille de DexScreener. J'ai aussi retravaillé le parser pour qu'il comprenne le texte bruité de l'OCR, avec des règles plus souples.</li>
+                    <li><strong>Analyse par IA textuelle</strong> : au lieu de faire regarder l'image à l'IA, je lui envoie le texte extrait par l'OCR. L'IA (modèle texte local) analyse les metrics et affine les scores.</li>
+                </ol>
+
+                <p>Pour le côté "rafraîchissement", plutôt que du temps réel impossible, j'ai mis en place un système d'<em>auto-refresh toutes les 20 secondes</em>. Mais avec une optimisation clé : si le screenshot n'a pas changé (hash OCR identique), on ne réanalyse rien. Les scores restent en cache. Ça évite de spammer l'IA et de remplir la base de données pour rien.</p>
+
+                <p>J'ai aussi ajouté un système de tri sur les tokens détectés : par score IA, par type de recommandation, ou par market cap. Pratique pour voir rapidement les meilleures opportunités.</p>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/meme-coins/tokens_retrieved.PNG" alt="Tokens détectés avec scores dans l'app" loading="lazy">
+                    <figcaption style="text-align:center; color: var(--text-light); font-size: 0.85rem; margin-top: 8px;">Capture de mon application — Tokens détectés avec leurs scores</figcaption>
+                </figure>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/meme-coins/sorted.jpg" alt="Tri des tokens par score dans l'app" loading="lazy">
+                    <figcaption style="text-align:center; color: var(--text-light); font-size: 0.85rem; margin-top: 8px;">Capture de mon application — Tri par score IA activé</figcaption>
+                </figure>
+
+                <figure class="article-figure">
+                    <img class="article-img" src="../src/images/meme-coins/auto-refresh.PNG" alt="Auto-refresh activé dans l'app" loading="lazy">
+                    <figcaption style="text-align:center; color: var(--text-light); font-size: 0.85rem; margin-top: 8px;">Capture de mon application — Auto-refresh toutes les 20 secondes</figcaption>
+                </figure>
+
+                <hr>
+
+                <h2>Conclusion</h2>
+
+                <p>Ce projet m'aura pris une journée. Une journée intense où j'ai appris énormément : Flask, OCR, gestion de cache, et surtout la patience nécessaire quand ton IA locale te répond en prose au lieu de JSON.</p>
+
+                <p>C'est un projet purement instructif. Le frontend est moche, l'analyse n'est pas infaillible, et je ne conseillerais à personne de trader avec ça. Mais c'était exactement le but : apprendre en construisant quelque chose de concret, dans un domaine qui m'intéresse.</p>
+
+                <p>Et au passage, j'ai appris un vocabulaire crypto que je ne connaissais pas. Market cap, liquidité, holders, rug pull, pump, dump… Quand on code un outil autour de ça, on est <em>obligé</em> de comprendre ce que ça signifie.</p>
+
+                <p>Bref, un projet fun, un peu débile sur les bords (analyser des meme coins sérieusement, quand même), mais qui m'a fait progresser. La prochaine fois, peut-être que je tenterai de brancher une vraie API crypto pour avoir des données temps réel sans OCR. Ou pas. On verra.</p>
+
+                <p style="margin-top: 24px; color: var(--text-light); font-style: italic;">PS : Pour la première fois, j'ai réellement utilisé un projet que j'avais codé pour prendre une décision… et j'ai gagné 2-3€. C'est pas la retraite à 33 ans, mais c'est déjà ça.</p>
+            </div>
+        </article>
+    </main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" aria-hidden="true">
+        <button class="lightbox-close" aria-label="Fermer">&times;</button>
+        <img class="lightbox-img" src="" alt="Agrandissement">
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Andry RAZAFINDRAZAKA. Tous droits réservés.</p>
+    </footer>
+
+    <script src="../js/navbar.js"></script>
+    <script src="../js/script.js"></script>
+</body>
+</html>
